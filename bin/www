@@ -6,6 +6,7 @@ var http = require('http');
 var express = require('express');
 var logger = require('morgan');
 var createError = require('http-errors');
+var portmap = require('../portmap');
 
 var port = normalizePort(process.env.PORT || '8080');
 portkbdapp.set('port', port);
@@ -70,6 +71,7 @@ setuptempapp = (tempapp, charcode) => {
 
         let outbound = http.request(options, bufferresponse => {
           bufferresponse.on('data', d => {
+            res.setHeader('Content-Type', 'application/json');
             res.send(d);
           })
         })
@@ -81,7 +83,8 @@ setuptempapp = (tempapp, charcode) => {
 };
 
 var i;
-for (i = 97; i < 122; i++) {
+//for (i = 97; i <= 122; i++) {
+for (i = 0; i <= 127; i++) {
     const tempapp = express();
 
     tempapp.disable('etag');
@@ -95,4 +98,5 @@ for (i = 97; i < 122; i++) {
     tempserver.on('error', onError);
     tempserver.on('listening', onListening);
     console.log('Character '+String.fromCharCode(i)+' listening on port ' +  tempserver.address().port);
+    portmap[i] = tempserver.address().port;
 }

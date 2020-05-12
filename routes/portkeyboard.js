@@ -1,8 +1,9 @@
 var express = require('express');
+var portmap = require('../portmap');
 var router = express.Router();
 
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'BadKBD - port edition' });
 });
 
 var keyboard = '';
@@ -20,7 +21,13 @@ router.get('/internal/type', (req, res) => {
             parseInt(
                 (req.header('PortKeyboard-Forwarded-For'))));
     keyboard += key;
-	res.send(key+" accepted");
+    res.setHeader('Content-Type', 'application/json');
+	res.send('{"status":"accepted","key":"'+key+'"}');
+});
+
+router.get('/internal/broadcast', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(portmap));
 });
 
 module.exports = router;

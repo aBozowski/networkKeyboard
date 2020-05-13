@@ -1,28 +1,14 @@
 var express = require('express');
-var portmap = require('../portmap');
+var portmap = require('../singletons/portmap');
 var router = express.Router();
+const keyboard = require('../singletons/keyboard');
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'BadKBD - port edition' });
 });
 
-var keyboard = '';
-
 router.get('/read', (req, res) => {
-    if(keyboard.length == 0)
-        res.send("");
-    else
-        res.send(keyboard);
-	return
-});
-
-router.get('/internal/type', (req, res) => {
-    key = String.fromCharCode(
-            parseInt(
-                (req.header('PortKeyboard-Forwarded-For'))));
-    keyboard += key;
-    res.setHeader('Content-Type', 'application/json');
-	res.send('{"status":"accepted","key":"'+key+'"}');
+    res.send(keyboard.buffer);
 });
 
 router.get('/internal/broadcast', (req, res) => {

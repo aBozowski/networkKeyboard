@@ -6,8 +6,8 @@ var http = require('http');
 var express = require('express');
 var logger = require('morgan');
 var createError = require('http-errors');
-var portmap = require('../portmap');
-
+var portmap = require('../singletons/portmap');
+const keyboard = require('../singletons/keyboard');
 var port = normalizePort(process.env.PORT || '8080');
 portkbdapp.set('port', port);
 
@@ -59,31 +59,14 @@ function onListening() {
 
 setuptempapp = (tempapp, charcode) => {
     tempapp.get('/', function(req, res, next) {
-        const options = {
-            hostname: '127.0.0.1',
-            port: 8080,
-            path: '/internal/type',
-            method: 'GET',
-            headers: {
-                "PortKeyboard-Forwarded-For": '' +charcode
-            }
-        };
-
-        let outbound = http.request(options, bufferresponse => {
-          bufferresponse.on('data', d => {
-            res.setHeader('Content-Type', 'application/json');
-            res.send(d);
-          })
-        })
-        outbound.on('error', error => {
-            res.send(error);
-        })
-        outbound.end();
+        let char =  String.fromCharCode(charcode);
+        keyboard.addKey(char);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({'state':'accepted','character':char}));
     });
 };
 
 var i;
-//for (i = 97; i <= 122; i++) {
 for (i = 0; i <= 127; i++) {
     const tempapp = express();
 

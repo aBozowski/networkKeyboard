@@ -1,85 +1,17 @@
 #!/usr/bin/env node
 
-var portkbdapp = require('../app');
-var debug = require('debug')('untitled4:server');
-var http = require('http');
-var express = require('express');
-var logger = require('morgan');
-var createError = require('http-errors');
-var portmap = require('../singletons/portmap');
-const keyboard = require('../singletons/keyboard');
-var port = normalizePort(process.env.PORT || '8080');
-portkbdapp.set('port', port);
+const portkbdapp = require('../app');
+const createPortHandler = require('../porthandlerfactory');
+const http = require('http');
 
-var server = http.createServer(portkbdapp);
+const PORT = '8080';
+const MIN_ASCII_RANGE = 0;
+const MAX_ASCII_RANGE = 127;
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+portkbdapp.set('port', PORT);
+const server = http.createServer(portkbdapp);
+server.listen(PORT);
 
-function normalizePort(val) {
-    var port = parseInt(val, 10);
-    if (isNaN(port))
-        return val;
-    if (port >= 0)
-        return port;
-    return false;
-}
-
-function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-
-    var bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
-
-    switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
-}
-
-function onListening() {
-    var addr = server.address();
-    var bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-    debug('Listening on ' + bind);
-}
-
-setuptempapp = (tempapp, charcode) => {
-    tempapp.get('/', function(req, res, next) {
-        let char =  String.fromCharCode(charcode);
-        keyboard.addKey(char);
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({'state':'accepted','character':char}));
-    });
-};
-
-var i;
-for (i = 0; i <= 127; i++) {
-    const tempapp = express();
-
-    tempapp.disable('etag');
-    tempapp.use(logger('dev'));
-    tempapp.use(express.json());
-    tempapp.use(express.urlencoded({ extended: false }));
-    setuptempapp(tempapp,i);
-
-    var tempserver = http.createServer(tempapp);
-    tempserver.listen(0);
-    tempserver.on('error', onError);
-    tempserver.on('listening', onListening);
-    console.log('Character '+String.fromCharCode(i)+' listening on port ' +  tempserver.address().port);
-    portmap[i] = tempserver.address().port;
+for (let i = MIN_ASCII_RANGE; i <= MAX_ASCII_RANGE; i++) {
+    createPortHandler(i);
 }

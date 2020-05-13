@@ -15,6 +15,6 @@ class Keyboard {
     }
 }
 
-keyboard = new Keyboard();
+const keyboard = new Keyboard();
 
 module.exports = keyboard;

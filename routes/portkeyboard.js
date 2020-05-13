@@ -1,14 +1,14 @@
-var express = require('express');
-var portmap = require('../singletons/portmap');
-var router = express.Router();
+const portmap = require('../singletons/portmap');
 const keyboard = require('../singletons/keyboard');
+const express = require('express');
+const router = express.Router();
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'BadKBD - port edition' });
 });
 
 router.get('/read', (req, res) => {
-    res.send(keyboard.buffer);
+    res.end(keyboard.buffer);
 });
 
 router.get('/internal/broadcast', (req, res) => {
